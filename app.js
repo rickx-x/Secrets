@@ -3,7 +3,8 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const ejs = require("ejs");
 const mongoose = require("mongoose");
-const md5 = require("md5");
+const bcrypt = require('bcrypt');
+const saltRounds = 10;
 
 const app = express();
 
@@ -18,13 +19,13 @@ mongoose.connect(url,{useNewUrlParser: true})
 .catch((err)=>{console.log(err);})
 
 
-//user Schema
+//userSchema
 const userSchema = new mongoose.Schema({
     username:String,
     password:String
 });
 
-//model
+//user model
 const User = mongoose.model("User",userSchema);
 
 
@@ -40,8 +41,15 @@ app.route('/login')
     .post((req,res)=>{
         User.findOne({username:req.body.username})
         .then((found)=>{
-            if(found != null && found.password === md5(req.body.password)){
-                res.render("secrets")
+            if(found != null){
+                bcrypt.compare(req.body.password, found.password, function(err, result) {
+                    if(result){
+                        res.render("secrets");
+                    }
+                    else{
+                        res.send("enter correct Username and Password");
+                    }
+                });
             }
             else{
                 res.send("enter correct Username and Password");
@@ -53,10 +61,16 @@ app.route('/register')
         res.render("register");
     })
     .post((req,res)=>{
-        User.create({ username:req.body.username , password:md5(req.body.password) })
-        .then(result => {
-        console.log(result)
-        res.render("secrets");
+
+        bcrypt.hash(req.body.password, saltRounds, function(err, hash) {
+            User.create({ 
+            username:req.body.username,
+            password:hash
+            })
+            .then(result => {
+            // console.log(result)
+            res.render("secrets");
+        });
         })
     })
 
@@ -67,3 +81,4 @@ app.route('/register')
 app.listen(3000,()=>{
     console.log("server started at port 3000");
 })
+
