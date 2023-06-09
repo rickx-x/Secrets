@@ -12,8 +12,7 @@ app.use(express.static("public"));
 app.set('view engine','ejs');
 app.use(bodyParser.urlencoded({extended: true}));
 
-const url = //"mongodb+srv://admin-rithesh:test123@cluster0.5ityb8d.mongodb.net/______";
-"mongodb://127.0.0.1:27017/SecretsDB";
+const url = "mongodb://127.0.0.1:27017/SecretsDB";
 mongoose.connect(url,{useNewUrlParser: true})
 .then(()=>{console.log("Database is connected");})
 .catch((err)=>{console.log(err);})
